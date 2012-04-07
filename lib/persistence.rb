@@ -1,8 +1,6 @@
 require 'cassandra-cql'
 require 'simple_uuid'
 
-#$db = CassandraCQL::Database.new('127.0.0.1:9160', {:keyspace => 'test'})
-
 module Helenus
   module Persistence
     
@@ -22,6 +20,13 @@ module Helenus
             self.setup_column_family
             self.save
           end
+        end
+        self.save_indexes
+      end
+
+      def save_indexes
+        self.class.indexes.each do |key, index|
+          index.save_index(self)
         end
       end
       

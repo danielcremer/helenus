@@ -9,12 +9,13 @@ require 'minitest/autorun'
 require 'minitest/pride'
 require dirname + '/../lib/helenus'
 
-Helenus::setup('127.0.0.1:9160', {:keyspace => 'test2'})
+# Helenus::client("CREATE KEYSPACE test WITH strategy_class='org.apache.cassandra.locator.SimpleStrategy' AND strategy_options:replication_factor=1")
+Helenus::setup('127.0.0.1:9160', {:keyspace => 'test'})
 
 class Dog
   include Helenus
   property :size, String, :default => 'large'
-  property :name, String
+  property :name, String, :index => true
 end
 
 class TestGenerator
@@ -26,6 +27,10 @@ describe "A Model" do
   before do
     @dog = Dog.new
     @dog.id = "12345"
+  end
+
+  after do
+    Helenus::client("DROP KEYSPACE test")
   end
   
   it "creates an accessor on the property" do
@@ -51,5 +56,21 @@ describe "A Model" do
     test_gen = TestGenerator.create
     assert(test_gen, '123456')
   end
+
+end
+
+
+describe "A Model with indexes" do
+=begin
+class Person
+  include Helenus
+  property :name, String, :index => true
+  property :age, String
+  index :name_and_age, [:name, :age]
+end
+
+Person.find_by_name('john', :page => 2, :page_size => 10)
+Perons.find_by_name_and_age('test')
+=end
 
 end

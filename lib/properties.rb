@@ -6,7 +6,10 @@ module Helenus
       # returns list of all property names
       def properties
         @properties ||= []
-        @properties
+      end
+
+      def indexes
+        @indexes ||= {}
       end
 
       def generate_id(instance)
@@ -16,6 +19,10 @@ module Helenus
       def property(name, type, options={})
         @properties ||= []
         @properties << name
+
+        if options[:index]
+          indexes[name] = Helenus::Index.new(self, name)
+        end
         
         define_method name.to_sym do
           @properties ||= {}
