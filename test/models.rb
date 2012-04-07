@@ -22,4 +22,9 @@ def clear_cassandra
     Helenus::client.execute("DROP COLUMNFAMILY testgenerator")
   rescue CassandraCQL::Error::InvalidRequestException => e
   end
+
+  begin
+    Helenus::client.execute("DROP COLUMNFAMILY helenus_indexes")
+  rescue CassandraCQL::Error::InvalidRequestException => e
+  end
 end

@@ -51,16 +51,30 @@ end
 
 
 describe "A Model with indexes" do
-=begin
-class Person
-  include Helenus
-  property :name, String, :index => true
-  property :age, String
-  index :name_and_age, [:name, :age]
+  before do
+    clear_cassandra
+  end
+
+  it "adds 1 index column per indexed property when created" do
+    Dog.create(:id => '12345', :name => 'Fido')
+    indexes = Helenus::client.execute('SELECT * FROM ? where id=?', 'helenus_indexes', 'dog_name').fetch_hash
+    indexes.delete('id')
+    assert_equal 1, indexes.size
+
+    Dog.create(:id => '5555', :name => 'Fido')
+    indexes = Helenus::client.execute('SELECT * FROM ? where id=?', 'helenus_indexes', 'dog_name').fetch_hash
+    indexes.delete('id')
+    assert_equal 2, indexes.size
+  end
+
+  it "can be queried by index" do
+    dog = Dog.create(:id => '001', :name => 'Fido')
+    dog = Dog.create(:id => '002', :name => 'Fido')
+    dog = Dog.create(:id => '003', :name => 'Rex')
+    result = Dog.find_all_by(:name, 'Fido')
+    assert_equal 2, result.size
+    assert_equal '003', Dog.find_by(:name, 'rex').id
+  end
+
 end
 
-Person.find_by_name('john', :page => 2, :page_size => 10)
-Perons.find_by_name_and_age('test')
-=end
-
-end
