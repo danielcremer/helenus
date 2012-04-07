@@ -55,7 +55,7 @@ describe "A Model with indexes" do
     clear_cassandra
   end
 
-  it "adds 1 index column per indexed property when created" do
+  it "when created adds 1 index column per indexed property" do
     Dog.create(:id => '12345', :name => 'Fido')
     indexes = Helenus::client.execute('SELECT * FROM ? where id=?', 'helenus_indexes', 'dog_name').fetch_hash
     indexes.delete('id')
