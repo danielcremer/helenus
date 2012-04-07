@@ -1,6 +1,7 @@
 require 'cassandra-cql'
+require 'simple_uuid'
 
-$db = CassandraCQL::Database.new('127.0.0.1:9160', {:keyspace => 'Keyspace1'})
+#$db = CassandraCQL::Database.new('127.0.0.1:9160', {:keyspace => 'test'})
 
 module Helenus
   module Persistence
@@ -13,8 +14,9 @@ module Helenus
     
     module InstanceMethods
       def save
+        self.id = self.generate_id if self.id.nil?
         begin
-          $db.execute("INSERT INTO ? (id, ?) VALUES (?, ?)", column_family_name, properties.keys, self.id, properties.values)
+          Helenus::client.execute("INSERT INTO ? (id, ?) VALUES (?, ?)", column_family_name, properties.keys, self.id, properties.values)
         rescue CassandraCQL::Error::InvalidRequestException => e
           if e.message.match("unconfigured columnfamily")
             self.setup_column_family
@@ -24,7 +26,7 @@ module Helenus
       end
       
       def delete
-        $db.execute("DELETE FROM ? WHERE id=?", column_family_name, self.id)
+        Helenus::client.execute("DELETE FROM ? WHERE id=?", column_family_name, self.id)
       end
       
       def column_family_name
@@ -32,11 +34,11 @@ module Helenus
       end
       
       def setup_column_family
-        $db.execute("CREATE COLUMNFAMILY ? (id varchar PRIMARY KEY)", column_family_name)
+        Helenus::client.execute("CREATE COLUMNFAMILY ? (id varchar PRIMARY KEY)", column_family_name)
       end
       
       def execute(query, *args)
-        $db.execute(query, args)
+        Helenus::client.execute(query, args)
       end
       
     end

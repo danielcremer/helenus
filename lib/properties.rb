@@ -1,5 +1,3 @@
-#require 'active_support/concern'
-#require 'active_support/core_ext/hash/indifferent_access'
 
 module Helenus
   module Properties
@@ -9,6 +7,10 @@ module Helenus
       def properties
         @properties ||= []
         @properties
+      end
+
+      def generate_id(instance)
+        (@id_generator || Proc.new { SimpleUUID::UUID.new.to_guid }).call(instance)
       end
     
       def property(name, type, options={})
@@ -20,23 +22,18 @@ module Helenus
           @properties[name] ||= Property.new(name, type, options).get()
         end
         
-        define_method (name.to_s + '=').to_sym do |*args|
+        define_method( (name.to_s + '=').to_sym ) do |*args|
           @properties ||= {}
           @properties[name] ||= Property.new(name, type, options).get()
           @properties[name] = args.first
         end  
       end
-      
-      def key(name, type, options={})
-        @key = name
-        property(name, type, options)
+
+      def id_generator(proc)
+        @id_generator = proc
       end
       
-      def key_name
-        @key
-      end
-      
-      def create(properties)
+      def create(properties={})
         instance = self.new(properties)
         instance.save
         return instance
@@ -54,6 +51,10 @@ module Helenus
       
       def initialize(props={})
         props.each { |key,val| self.send((key.to_s + '=').to_sym, val)}
+      end
+
+      def generate_id
+        self.class.generate_id(self)
       end
       
     end

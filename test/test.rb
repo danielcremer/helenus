@@ -1,17 +1,25 @@
+# CREATE keyspace test with strategy_class = 'NetworkTopologyStrategy';
+ $: << '.'
+
 dirname = File.dirname(__FILE__)
-$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
+$LOAD_PATH.unshift(File.join(dirname, '..', 'lib'))
 
 require 'rubygems'
 require 'minitest/autorun'
 require 'minitest/pride'
 require dirname + '/../lib/helenus'
 
+Helenus::setup('127.0.0.1:9160', {:keyspace => 'test2'})
 
 class Dog
   include Helenus
-  key :id, String
   property :size, String, :default => 'large'
   property :name, String
+end
+
+class TestGenerator
+  include Helenus
+  id_generator Proc.new { '123456' }
 end
 
 describe "A Model" do
@@ -34,9 +42,14 @@ describe "A Model" do
     assert_equal 'large', @dog.properties[:size]
   end
   
-  it "should set a key property" do
-    assert_equal '12345', @dog.id
-    assert_equal :id, Dog.key_name
+  it "should set an id automatically" do
+    dog = Dog.create
+    assert(dog.id.size == 36)
   end
-  
+
+  it "can have a custom id generator" do
+    test_gen = TestGenerator.create
+    assert(test_gen, '123456')
+  end
+
 end
