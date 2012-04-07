@@ -26,13 +26,14 @@ module Helenus
         
         define_method name.to_sym do
           @properties ||= {}
-          @properties[name] ||= Property.new(name, type, options).get()
+          @properties[name] ||= Property.new(name, type, options)
+          @properties[name].get()
         end
         
         define_method( (name.to_s + '=').to_sym ) do |*args|
           @properties ||= {}
-          @properties[name] ||= Property.new(name, type, options).get()
-          @properties[name] = args.first
+          @properties[name] ||= Property.new(name, type, options)
+          @properties[name].set(args.first)
         end  
       end
 
@@ -55,9 +56,19 @@ module Helenus
         self.class.properties.each { |prop| hash[prop] = self.send(prop) }
         hash
       end
+
+      def dirty_properties
+        props = []
+        @properties.each do |name, property|
+          props << name if property.dirty
+        end
+        return props
+      end
       
       def initialize(props={})
-        props.each { |key,val| self.send((key.to_s + '=').to_sym, val)}
+        # hackish way to initialize the properties
+        self.class.properties.each { |prop_name| self.send(prop_name) }
+        props.each { |name, val| @properties[name.to_sym].load(val) }
       end
 
       def generate_id
@@ -69,12 +80,15 @@ module Helenus
   end
     
   class Property
-    
+    attr_reader :dirty
+
     def initialize(name, type, options)
       @name = name
       @type = type
       @options = options
       @value = default
+      @dirty = false
+      @old_value = @value
     end
     
     def default
@@ -84,8 +98,13 @@ module Helenus
     def get
       return @value
     end
+
+    def load(val)
+      @value = val
+    end
     
     def set(val)
+      @dirty = true
       @value = val
     end
     

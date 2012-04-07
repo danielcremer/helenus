@@ -10,7 +10,7 @@ module Helenus
 		end
 
 		def save_index(instance)
-			Helenus::client.execute("INSERT INTO helenus_indexes (id, ?) VALUES (?, NULL)", column_name(instance), row_name)
+			Helenus::client.execute("INSERT INTO helenus_indexes (id, ?) VALUES (?, NULL)", column_name(instance), row_name) if indexable?(instance)
 		rescue CassandraCQL::Error::InvalidRequestException => e
 			if e.message.match("unconfigured columnfamily")
 				setup_column_family
@@ -22,9 +22,13 @@ module Helenus
 			# todo
 		end
 
+		def indexable?(instance)
+			not	@properties.map { |prop| instance.send(prop) }.include?(nil)
+		end
+
 		def column_name(instance)
-			prop_values = @properties.map { |prop| instance.send(prop).downcase }
-			prop_values.join('_') + "." + instance.id
+			props = @properties.map { |prop| instance.send(prop).downcase }
+			props.join('_') + "." + instance.id
 		end
 
 		def row_name
@@ -35,9 +39,15 @@ module Helenus
 			Helenus::client.execute("CREATE COLUMNFAMILY ? (id varchar PRIMARY KEY)", "helenus_indexes")
 		end
 
+		# TODO: Figure out Cassandra truly sorts the columns
 		def find_ids(term, limit=100)
-			cols_start = "#{term.downcase}.0"
-			cols_end = "#{term.downcase}.z"
+			if term.match "\\*$"
+				cols_start = "#{term.downcase}0"
+				cols_start = "#{term.downcase}z"
+			else
+				cols_start = "#{term.downcase}.0"
+				cols_end = "#{term.downcase}.z"
+			end
 			ids = []
 			Helenus::client.execute("SELECT FIRST ? ?..? FROM ? WHERE id=?", 
 															limit, cols_start, cols_end, "helenus_indexes", row_name).fetch_hash.each do |key, val|
