@@ -29,7 +29,7 @@ This object will manage it's own secondary index for any properties with the ind
 
 ## Pluggable id generation
 
-By default Helenus uses the simple_uuid gem to generate ids automatically. You can plug in your own id generation log:
+By default Helenus uses the simple_uuid gem to generate ids automatically. You can plug in your own id generation logic:
 
     class Person
       include Helenus
