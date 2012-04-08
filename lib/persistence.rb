@@ -21,6 +21,7 @@ module Helenus
             self.save
           end
         end
+        self.clear_dirty_indexes
         self.save_indexes
       end
 
@@ -32,6 +33,21 @@ module Helenus
       
       def delete
         Helenus::client.execute("DELETE FROM ? WHERE id=?", column_family_name, self.id)
+        clear_all_indexes
+      end
+
+      def clear_all_indexes
+        self.class.indexes.each do |key, index|
+          index.clear_index(self)
+        end
+      end
+
+      def clear_dirty_indexes
+        self.dirty_properties.each do |name, val|
+          if index = self.class.indexes[name]
+            index.clear_index(self)
+          end
+        end
       end
       
       def column_family_name

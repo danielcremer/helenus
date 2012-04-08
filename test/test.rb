@@ -7,6 +7,7 @@ require 'minitest/autorun'
 require 'minitest/pride'
 require dirname + '/../lib/helenus'
 require dirname + '/models'
+require dirname + '/helpers'
 
 describe "A Model" do
   before do
@@ -57,14 +58,9 @@ describe "A Model with indexes" do
 
   it "when created adds 1 index column per indexed property" do
     Dog.create(:id => '12345', :name => 'Fido')
-    indexes = Helenus::client.execute('SELECT * FROM ? where id=?', 'helenus_indexes', 'dog_name').fetch_hash
-    indexes.delete('id')
-    assert_equal 1, indexes.size
-
+    assert_equal 1, raw_indexes_data('dog_name').size
     Dog.create(:id => '5555', :name => 'Fido')
-    indexes = Helenus::client.execute('SELECT * FROM ? where id=?', 'helenus_indexes', 'dog_name').fetch_hash
-    indexes.delete('id')
-    assert_equal 2, indexes.size
+    assert_equal 2, raw_indexes_data('dog_name').size
   end
 
   it "can be queried by index" do
@@ -74,6 +70,21 @@ describe "A Model with indexes" do
     result = Dog.find_all_by(:name, 'Fido')
     assert_equal 2, result.size
     assert_equal '003', Dog.find_by(:name, 'rex').id
+  end
+
+  it "deletes it's index when deleted" do
+    dog = Dog.create(:id => '001', :name => 'Snoopy')
+    assert_equal 1, raw_indexes_data('dog_name').size
+    dog.delete
+    assert_equal 0, raw_indexes_data('dog_name').size
+  end
+
+  it "removes old indexes when saved with new values" do
+    dog = Dog.create(:id => '001', :name => 'Snoopy')
+    assert_equal 1, raw_indexes_data('dog_name').size
+    dog.name = "Rufus"
+    dog.save
+    assert_equal 1, raw_indexes_data('dog_name').size
   end
 
 end

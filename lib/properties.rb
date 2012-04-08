@@ -57,10 +57,18 @@ module Helenus
         hash
       end
 
+      # Returns hash of all propery objects
+      # TODO: Can this be merged with the properties method?
+      def property_objects
+        hash = {}
+        self.class.properties.each { |prop| hash[prop] = @properties[prop] }
+        hash
+      end
+
       def dirty_properties
-        props = []
+        props = {}
         @properties.each do |name, property|
-          props << name if property.dirty
+          props[name] = property.persisted_value if property.dirty?
         end
         return props
       end
@@ -80,15 +88,15 @@ module Helenus
   end
     
   class Property
-    attr_reader :dirty
+    attr_reader :dirty, :persisted_value
 
     def initialize(name, type, options)
       @name = name
       @type = type
       @options = options
-      @value = default
       @dirty = false
-      @old_value = @value
+      @value = default
+      @persisted_value = @value
     end
     
     def default
@@ -100,12 +108,17 @@ module Helenus
     end
 
     def load(val)
+      @persisted_value = val
       @value = val
     end
     
     def set(val)
       @dirty = true
       @value = val
+    end
+
+    def dirty?
+      dirty
     end
     
   end

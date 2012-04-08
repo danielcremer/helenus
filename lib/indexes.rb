@@ -19,7 +19,7 @@ module Helenus
 		end
 
 		def clear_index(instance)
-			# todo
+			Helenus::client.execute("DELETE ? FROM ? WHERE id=?", column_name_for_deletion(instance), "helenus_indexes", row_name)
 		end
 
 		def indexable?(instance)
@@ -28,6 +28,11 @@ module Helenus
 
 		def column_name(instance)
 			props = @properties.map { |prop| instance.send(prop).downcase }
+			props.join('_') + "." + instance.id
+		end
+
+		def column_name_for_deletion(instance)
+			props = @properties.map { |prop| instance.property_objects[prop].persisted_value.downcase }
 			props.join('_') + "." + instance.id
 		end
 
