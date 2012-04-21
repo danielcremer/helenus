@@ -76,11 +76,20 @@ module Helenus
       def initialize(props={})
         # hackish way to initialize the properties
         self.class.properties.each { |prop_name| self.send(prop_name) }
+        @version = props.delete('version')
         props.each { |name, val| @properties[name.to_sym].load(val) }
       end
 
       def generate_id
         self.class.generate_id(self)
+      end
+
+      def version
+        return @version
+      end
+
+      def updated_at
+        @version ? SimpleUUID::UUID.new( @version ).to_time : nil
       end
       
     end

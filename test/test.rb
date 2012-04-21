@@ -48,6 +48,18 @@ describe "A Model" do
     assert(test_gen, '123456')
   end
 
+  it "should have a nil version and updated_at when new" do
+    assert_nil @dog.version
+    assert_nil @dog.updated_at
+  end
+
+  # Updated_at uses the version UUID to calculate the time
+  it "should automatically have a version and updated_at when saved" do
+    @dog.save
+    assert_instance_of String, @dog.version
+    assert_instance_of Time, @dog.updated_at
+  end
+
 end
 
 

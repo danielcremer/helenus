@@ -13,8 +13,13 @@ module Helenus
     module InstanceMethods
       def save
         self.id = self.generate_id if self.id.nil?
+        @version = SimpleUUID::UUID.new.to_guid
         begin
-          Helenus::client.execute("INSERT INTO ? (id, ?) VALUES (?, ?)", column_family_name, properties.keys, self.id, properties.values)
+          Helenus::client.execute( "INSERT INTO ? (id, ?) VALUES (?, ?)", 
+                                   column_family_name, 
+                                   properties.keys + ['version'], 
+                                   self.id, 
+                                   properties.values + [@version] )
         rescue CassandraCQL::Error::InvalidRequestException => e
           if e.message.match("unconfigured columnfamily")
             self.setup_column_family
