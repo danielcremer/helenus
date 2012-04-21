@@ -77,6 +77,7 @@ module Helenus
         # hackish way to initialize the properties
         self.class.properties.each { |prop_name| self.send(prop_name) }
         @version = props.delete('version')
+        @old_version = @version
         props.each { |name, val| @properties[name.to_sym].load(val) }
       end
 
@@ -86,6 +87,10 @@ module Helenus
 
       def version
         return @version
+      end
+
+      def old_version
+        return @old_version
       end
 
       def updated_at

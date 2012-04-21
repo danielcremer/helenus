@@ -28,6 +28,7 @@ module Helenus
         end
         self.clear_dirty_indexes
         self.save_indexes
+        @old_version = version
       end
 
       def save_indexes

@@ -19,7 +19,9 @@ module Helenus
 		end
 
 		def clear_index(instance)
-			Helenus::client.execute("DELETE ? FROM ? WHERE id=?", column_name_for_deletion(instance), "helenus_indexes", row_name)
+			if instance.old_version
+				Helenus::client.execute("DELETE ? FROM ? WHERE id=?", column_name_for_deletion(instance), "helenus_indexes", row_name)
+			end
 		end
 
 		def indexable?(instance)
@@ -28,12 +30,12 @@ module Helenus
 
 		def column_name(instance)
 			props = @properties.map { |prop| instance.send(prop).downcase }
-			props.join('_') + "." + instance.id
+			props.join('_') + "." + instance.id + "." + instance.version
 		end
 
 		def column_name_for_deletion(instance)
 			props = @properties.map { |prop| instance.property_objects[prop].persisted_value.downcase }
-			props.join('_') + "." + instance.id
+			props.join('_') + "." + instance.id + "." + instance.old_version
 		end
 
 		def row_name
@@ -56,7 +58,7 @@ module Helenus
 			ids = []
 			Helenus::client.execute("SELECT FIRST ? ?..? FROM ? WHERE id=?", 
 															limit, cols_start, cols_end, "helenus_indexes", row_name).fetch_hash.each do |key, val|
-				ids << key.split('.').last if key.include?('.')
+				ids << key.split('.')[-2] if key.include?('.')
 			end
 			return ids
 		end
