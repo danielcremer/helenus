@@ -12,6 +12,7 @@ module Helenus
     
     module InstanceMethods
       def save
+        helenus_set_relations
         self.id = self.generate_id if self.id.nil?
         @version = SimpleUUID::UUID.new.to_guid
         begin

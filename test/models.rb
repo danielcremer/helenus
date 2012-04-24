@@ -12,6 +12,18 @@ class TestGenerator
   id_generator Proc.new { '123456' }
 end
 
+class Page
+  include Helenus
+  belongs_to :book
+end
+
+class Book
+  include Helenus
+  #has_many :pages
+end
+
+
+
 
 def clear_cassandra
   begin

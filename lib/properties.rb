@@ -122,8 +122,10 @@ module Helenus
     end
     
     def set(val)
-      @dirty = true
-      @value = val
+      if @value != val
+        @dirty = true
+        @value = val
+      end
     end
 
     def dirty?

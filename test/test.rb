@@ -101,3 +101,31 @@ describe "A Model with indexes" do
 
 end
 
+
+describe "A Model belonging to another" do
+  before do
+    @page = Page.new
+  end
+
+  it "will have a property for the parent model id" do
+    assert_respond_to @page, :book_id
+  end
+
+  it "can set a parent object" do
+    book = Book.create
+    @page.book = book
+    @page.save
+    assert_equal book.id, Page.find(@page.id).book_id
+  end
+
+  it "creates an index for the parent id" do
+    book = Book.create
+    @page.book = book
+    @page.save
+    results = Page.find_all_by(:book_id, book.id)
+    assert_equal 1, results.size
+    assert_equal @page.id, results[0].id
+  end
+
+end
+
