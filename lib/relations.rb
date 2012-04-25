@@ -18,6 +18,16 @@ module Helenus
           self.send(relation.property_name.to_s + '=', object.id)
         end
       end
+
+      def has_many(name)
+        name = name.to_sym
+        
+        #relation = Helenus::Relations::HasMany.new(name)
+        define_method(name) do
+          helenus_relations[name] ||= Helenus::Relations::HasManyProxy.new(self, name) 
+        end
+      end
+
     end
 
     module InstanceMethods
@@ -52,6 +62,58 @@ module Helenus
       def class
         @class = opts[:class] || Kernel.const_get("::" + @name.capitalize)
       end
+    end
+
+    class HasMany
+      def initialize(parent, name, opts={})
+        @name = name.to_s
+      end
+    end
+
+    class HasManyProxy
+
+      def initialize(parent, name)
+        @parent = parent
+        @name = name.to_s
+      end
+
+      def find_associated
+        if @parent.id
+          foreign_key = @parent.class.to_s.foreign_key.to_sym
+          associatedClass = @name.classify.constantize
+          associatedClass.find_all_by(foreign_key, @parent.id)
+        else
+          []
+        end
+      end
+
+      def collection
+        @collection ||= find_associated
+      end
+
+      def size
+        collection.size
+      end
+
+      def <<(value)
+        collection << value
+      end
+
+      def [](index)
+        collection[index]
+      end
+
+      def first
+        collection.first
+      end
+
+      def save
+        @collection.each do |obj|
+          # assign foreign key
+          obj.save
+        end
+      end
+
     end
 
   end

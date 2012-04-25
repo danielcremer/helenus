@@ -24,6 +24,20 @@ module Helenus
         return instances
       end
 
+      def method_missing(method_id, *args)
+        if match = /find_(all_by|by)_([_a-zA-Z]\w*)/.match(method_id.to_s)
+          index_name = match[2].to_sym
+          val = args.first
+          if match[1] == 'by'
+            self.find_by(index_name, val)
+          elsif match[1] == 'all_by'
+            self.find_all_by(index_name, val)
+          end
+        else
+          raise NoMethodError
+        end
+      end
+
     end
     
   end

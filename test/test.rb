@@ -79,7 +79,7 @@ describe "A Model with indexes" do
     dog = Dog.create(:id => '001', :name => 'Fido')
     dog = Dog.create(:id => '002', :name => 'Fido')
     dog = Dog.create(:id => '003', :name => 'Rex')
-    result = Dog.find_all_by(:name, 'Fido')
+    result = Dog.find_all_by_name('Fido')
     assert_equal 2, result.size
     assert_equal '003', Dog.find_by(:name, 'rex').id
   end
@@ -125,6 +125,29 @@ describe "A Model belonging to another" do
     results = Page.find_all_by(:book_id, book.id)
     assert_equal 1, results.size
     assert_equal @page.id, results[0].id
+  end
+
+end
+
+describe "A Model that has_many others" do
+  before do
+    @book = Book.new
+  end
+
+  it "will have an empty collection" do
+    assert_equal 0, @book.pages.size
+  end
+
+  it "can store an object to the collection" do
+    page = Page.create
+    @book.pages << page
+    assert_equal page.id, @book.pages[0].id
+  end
+
+  it "can populate the collection" do
+    @book.save
+    page = Page.create(:book_id => @book.id)
+    assert_equal page.id, @book.pages.first.id
   end
 
 end

@@ -19,7 +19,7 @@ end
 
 class Book
   include Helenus
-  #has_many :pages
+  has_many :pages
 end
 
 
