@@ -12,8 +12,8 @@ module Helenus
     
     module InstanceMethods
       def save
-        helenus_set_relations
         self.id = self.generate_id if self.id.nil?
+        helenus_set_relations
         @version = SimpleUUID::UUID.new.to_guid
         begin
           Helenus::client.execute( "INSERT INTO ? (id, ?) VALUES (?, ?)", 

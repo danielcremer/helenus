@@ -2,6 +2,8 @@
 dirname = File.dirname(__FILE__)
 $LOAD_PATH.unshift(File.join(dirname, '..', 'lib'))
 
+require 'benchmark'
+
 require 'rubygems'
 require 'minitest/autorun'
 require 'minitest/pride'
@@ -59,6 +61,7 @@ describe "A Model" do
     assert_instance_of String, @dog.version
     assert_instance_of Time, @dog.updated_at
   end
+
 
 end
 
@@ -148,6 +151,15 @@ describe "A Model that has_many others" do
     @book.save
     page = Page.create(:book_id => @book.id)
     assert_equal page.id, @book.pages.first.id
+  end
+
+  # not working as it's trying to save the associated classes before 
+  # the parent is saved
+  it "will save associated objects" do
+    page = Page.new(:data => "test 1")
+    @book.pages << page
+    @book.save
+    assert_equal 1, Book.find(@book.id).pages.size
   end
 
 end

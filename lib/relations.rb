@@ -22,7 +22,6 @@ module Helenus
       def has_many(name)
         name = name.to_sym
         
-        #relation = Helenus::Relations::HasMany.new(name)
         define_method(name) do
           helenus_relations[name] ||= Helenus::Relations::HasManyProxy.new(self, name) 
         end
@@ -41,9 +40,13 @@ module Helenus
         # ... Go through relations and set properties (i.e. page.book_id)
         # This should be invoked before saving
         helenus_relations.each do |name, object|
-          # save relation if new_record
-          object.save if object.id.nil?
-          self.send((name.to_s + '_id=').to_sym, object.id)
+          if object.is_a?(Helenus::Relations::HasManyProxy)
+            object.save
+          elsif object.id.nil?
+            # save relation if new_record
+            object.save
+            self.send((name.to_s + '_id=').to_sym, object.id)
+          end
         end
       end
 
@@ -77,25 +80,12 @@ module Helenus
         @name = name.to_s
       end
 
-      def find_associated
-        if @parent.id
-          foreign_key = @parent.class.to_s.foreign_key.to_sym
-          associatedClass = @name.classify.constantize
-          associatedClass.find_all_by(foreign_key, @parent.id)
-        else
-          []
-        end
-      end
-
-      def collection
-        @collection ||= find_associated
-      end
-
       def size
         collection.size
       end
 
       def <<(value)
+        value.send( (foreign_key.to_s + '=').to_sym, @parent.id)
         collection << value
       end
 
@@ -109,9 +99,28 @@ module Helenus
 
       def save
         @collection.each do |obj|
-          # assign foreign key
+          obj.send( (foreign_key.to_s + '=').to_sym, @parent.id)
           obj.save
         end
+      end
+
+      private #--------- Private
+
+      def foreign_key
+        @parent.class.to_s.foreign_key.to_sym
+      end
+
+      def find_associated
+        if @parent.id
+          associatedClass = @name.classify.constantize
+          associatedClass.find_all_by(foreign_key, @parent.id)
+        else
+          []
+        end
+      end
+
+      def collection
+        @collection ||= find_associated
       end
 
     end

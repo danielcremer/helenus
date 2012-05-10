@@ -14,7 +14,7 @@ module Helenus
         self.find_all_by(index_name, val, 1).first
       end
 
-      def find_all_by(index_name, val, limit=100)
+      def find_all_by(index_name, val, limit=1000)
         instances = []
         if (ids = self.indexes[index_name].find_ids(val, limit)).size > 0
           Helenus::client.execute("SELECT * FROM ? where id in (?)", column_family_name, ids).fetch do |row| 
@@ -34,7 +34,7 @@ module Helenus
             self.find_all_by(index_name, val)
           end
         else
-          raise NoMethodError
+          raise NoMethodError.new("undefined method '#{method_id}' for #{self}")
         end
       end
 

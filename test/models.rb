@@ -15,10 +15,12 @@ end
 class Page
   include Helenus
   belongs_to :book
+  property :data, String
 end
 
 class Book
   include Helenus
+  property :name, String
   has_many :pages
 end
 
