@@ -5,6 +5,8 @@ class Dog
   include Helenus
   property :size, String, :default => 'large'
   property :name, String, :index => true
+
+  validates_presence_of :size
 end
 
 class TestGenerator

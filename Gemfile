@@ -7,3 +7,4 @@ end
 gem 'cassandra-cql'
 gem 'simple_uuid'
 gem 'activesupport'
+gem 'activemodel'

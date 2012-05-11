@@ -2,7 +2,9 @@ dirname = File.dirname(__FILE__)
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 
 require 'active_support/all'
+require 'active_model'
 
+#require 'validations'
 require 'indexes'
 require 'properties'
 require 'relations'
@@ -12,12 +14,15 @@ require 'finders'
 
 
 module Helenus
-  def self.included(base)
-    base.extend(Helenus::Properties::ClassMethods)
-    base.extend(Helenus::Relations::ClassMethods)
-    base.extend(Helenus::Persistence::ClassMethods)
-    base.extend(Helenus::Finders::ClassMethods)
-    base.property :id, String
+  extend ActiveSupport::Concern
+
+  included do
+    include ActiveModel::Validations
+    extend Helenus::Properties::ClassMethods
+    extend Helenus::Relations::ClassMethods
+    extend Helenus::Persistence::ClassMethods
+    extend Helenus::Finders::ClassMethods
+    property :id, String
   end
   
   include Helenus::Properties::InstanceMethods

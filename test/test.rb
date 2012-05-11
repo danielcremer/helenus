@@ -62,6 +62,13 @@ describe "A Model" do
     assert_instance_of Time, @dog.updated_at
   end
 
+  it "should support validations" do
+    @dog.size = nil
+    @dog.save
+    assert_equal false, @dog.valid?
+    @dog.size = 'large'
+    assert_equal true, @dog.valid?
+  end
 
 end
 

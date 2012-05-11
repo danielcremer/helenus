@@ -23,7 +23,8 @@ module Helenus
         end
         return instances
       end
-
+      
+=begin
       def method_missing(method_id, *args)
         if match = /find_(all_by|by)_([_a-zA-Z]\w*)/.match(method_id.to_s)
           index_name = match[2].to_sym
@@ -37,6 +38,7 @@ module Helenus
           raise NoMethodError.new("undefined method '#{method_id}' for #{self}")
         end
       end
+=end
 
     end
     

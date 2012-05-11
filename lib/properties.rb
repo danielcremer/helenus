@@ -22,6 +22,16 @@ module Helenus
 
         if options[:index]
           indexes[name] = Helenus::Index.new(self, name)
+
+          define_singleton_method "find_by_#{name}".to_sym do |*args|
+            val = args.first
+            self.find_by(name, val)
+          end
+
+          define_singleton_method "find_all_by_#{name}".to_sym do |*args|
+            val = args.first
+            self.find_all_by(name, val)
+          end
         end
         
         define_method name.to_sym do
